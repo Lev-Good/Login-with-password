@@ -152,7 +152,6 @@
         const SITE_PASSWORD = "458967"; 
         
         // 2. חיבור לקובץ ה-JSON שמיוצר על ידי הסקריפט ונשמר בגיטהאב
-        // חשוב: משתמשים ב-raw.githubusercontent.com כדי למשוך את הקובץ ישירות
         const DATA_JSON_URL = 'https://raw.githubusercontent.com/mytovmail/Login-with-password/main/data.json';
         // ==========================================
 
@@ -179,7 +178,7 @@
             }
         }
 
-        // טעינת שלדי טעינה (Skeletons) לאנימציה ראשונית
+        // טעינת שלדי טעינה (Skeletons)
         function showSkeletons() {
             const grid = document.getElementById('explorerGrid');
             grid.innerHTML = Array(15).fill().map((_, i) => `
@@ -194,8 +193,6 @@
         async function fetchExplorerData() {
             showSkeletons();
             try {
-                // אנו מוסיפים timestamp לכתובת כדי לעקוף את המטמון (Cache) של גיטהאב 
-                // ולוודא שתמיד נקבל את הקובץ המעודכן ביותר
                 const response = await fetch(DATA_JSON_URL + '?t=' + new Date().getTime());
                 
                 if (!response.ok) {
@@ -214,47 +211,71 @@
             }
         }
 
-        // בניית מבנה התיקיות מתוך ה-JSON
+        // בניית מבנה התיקיות מתוך ה-JSON (משופר וחסין לשגיאות)
         function buildFileSystem(jsonData) {
             fileSystem.children = {}; 
             allSearchableItems = [];
             
             jsonData.forEach(item => {
-                const pathStr = item["נתיב_תיקיה"] || "";
-                const fileName = item["שם_קובץ"] || "";
+                let pathStr = item["נתיב_תיקיה"] ? String(item["נתיב_תיקיה"]).trim() : "";
+                let fileName = item["שם_קובץ"] ? String(item["שם_קובץ"]).trim() : "";
                 const type = item["סוג"] || "";
                 const link = item["קישור"] || "";
                 const creationDate = item["תאריך_יצירה"] || "";
                 
                 if(!pathStr || !fileName) return; // ממשיך לאיבר הבא במקרה של שורה ריקה
 
+                // ניקוי נתיבים כפולים (למשל: תיקיה//תת-תיקיה)
+                pathStr = pathStr.replace(/\\/g, '/').replace(/\/+/g, '/');
+
                 const fileObj = { name: fileName, type: type, link: link, path: pathStr, date: creationDate };
                 
                 const folders = pathStr.split('/');
                 let currentNode = fileSystem;
                 let currentPathBuild = [];
+                
                 let startIndex = folders[0] === "ראשי" ? 1 : 0;
                 if(folders[0] === "ראשי") currentPathBuild.push("ראשי");
 
+                // מעבר על התיקיות ובניית העץ בזהירות
                 for (let j = startIndex; j < folders.length; j++) {
-                    let folderName = folders[j];
+                    let folderName = folders[j].trim();
+                    if(!folderName) continue; // דילוג על תיקיות ריקות
+
                     currentPathBuild.push(folderName);
+                    
+                    // אם התיקייה לא קיימת בכלל, ניצור אותה
                     if (!currentNode.children[folderName]) {
                         currentNode.children[folderName] = { name: folderName, type: "folder", pathArr: [...currentPathBuild], children: {} };
+                    } 
+                    // במקרה שקובץ יצר התנגשות עם שם של תיקייה (הגנה מפני שגיאת undefined)
+                    else if (!currentNode.children[folderName].children) {
+                        currentNode.children[folderName].children = {};
+                        currentNode.children[folderName].type = "folder";
+                        currentNode.children[folderName].pathArr = [...currentPathBuild];
                     }
+                    
                     currentNode = currentNode.children[folderName];
                 }
-                currentNode.children[fileName] = fileObj;
+                
+                // הוספת הקובץ הסופי
+                if (!currentNode.children[fileName]) {
+                    currentNode.children[fileName] = fileObj;
+                } else {
+                    // אם הקובץ כבר קיים, נעדכן אותו אבל נשמור על הילדים שלו אם הוא גם תיקייה
+                    fileObj.children = currentNode.children[fileName].children || {};
+                    if(Object.keys(fileObj.children).length > 0) fileObj.type = "folder";
+                    currentNode.children[fileName] = fileObj;
+                }
             });
             
             // איסוף והכנת "אינדקס" חיפוש מראש לביצועים מהירים
             function collectAllItems(node, collection) {
                 for (const key in node.children) {
                     const child = node.children[key];
-                    // יצירת אינדקס חיפוש מראש (חוסך המון משאבי מעבד בזמן החיפוש עצמו)
                     child.searchIndex = (child.name + " " + (child.path || "")).toLowerCase();
                     collection.push(child);
-                    if (child.type === "folder") collectAllItems(child, collection);
+                    if (child.type === "folder" || child.children) collectAllItems(child, collection);
                 }
             }
             collectAllItems(fileSystem, allSearchableItems);
@@ -278,7 +299,9 @@
 
         function renderCurrentFolder() {
             let currentNode = fileSystem;
-            for (let folder of currentPathArr) { if(currentNode.children[folder]) currentNode = currentNode.children[folder]; }
+            for (let folder of currentPathArr) { 
+                if(currentNode.children[folder]) currentNode = currentNode.children[folder]; 
+            }
             
             const breadcrumbsDiv = document.getElementById('breadcrumbsContainer');
             
@@ -307,12 +330,12 @@
             });
 
             items.forEach((item, i) => {
-                const delay = i * 0.05; // אפקט כניסה מדורג
+                const delay = i * 0.05; 
                 
-                if (item.type === "folder") {
+                if (item.type === "folder" || item.children) {
                     const pathStr = item.pathArr ? item.pathArr.join('||') : item.name;
                     const safePathStr = pathStr.replace(/'/g, "\\'").replace(/"/g, "&quot;");
-                    const itemCount = Object.keys(item.children || {}).length;
+                    const itemCount = item.children ? Object.keys(item.children).length : 0;
                     
                     gridDiv.innerHTML += `
                         <div onclick="jumpToFolderFromSearch('${safePathStr}')" class="tile-card glass rounded-3xl p-6 cursor-pointer flex flex-col items-center justify-center text-center aspect-square border border-white/10 group animate-pop" style="animation-delay: ${delay}s">
@@ -347,7 +370,6 @@
             const breadcrumbs = document.getElementById('breadcrumbsContainer');
             const searchHeader = document.getElementById('searchResultsHeader');
 
-            // אם שורת החיפוש ריקה
             if (searchTerm === "") {
                 breadcrumbs.parentElement.classList.remove('hidden'); 
                 searchHeader.classList.add('hidden');
@@ -357,11 +379,8 @@
             
             breadcrumbs.parentElement.classList.add('hidden'); 
             searchHeader.classList.remove('hidden');
-            
-            // תצוגת "טוען..." בזמן החיפוש
             document.getElementById('searchCount').innerText = "מחפש...";
 
-            // שימוש באינדקס שהכנו מראש
             let results = [];
             for (let i = 0; i < allSearchableItems.length; i++) {
                 if (allSearchableItems[i].searchIndex.includes(searchTerm)) {
@@ -369,12 +388,10 @@
                 }
             }
 
-            // הגבלת תוצאות כדי למנוע קריסת דפדפן (מציג מקסימום 100 תוצאות)
             const MAX_RESULTS = 100;
             const totalFound = results.length;
             const resultsToDisplay = results.slice(0, MAX_RESULTS);
 
-            // עדכון כותרת התוצאות
             let countText = `${totalFound} תוצאות`;
             if (totalFound > MAX_RESULTS) {
                 countText += ` (מציג את ה-${MAX_RESULTS} הראשונות. נא למקד את החיפוש)`;
@@ -384,14 +401,10 @@
             drawGrid(resultsToDisplay);
         }
 
-        // מערכת Debounce - מונעת חיפוש על כל אות, ומחכה שהמשתמש יסיים להקליד
         let searchTimeout = null;
         document.getElementById('searchInput').addEventListener('input', function() {
             clearTimeout(searchTimeout);
-            // מחכה 400 מילישניות אחרי סיום ההקלדה לפני שמריץ את החיפוש האמיתי
-            searchTimeout = setTimeout(() => {
-                handleSearch();
-            }, 400); 
+            searchTimeout = setTimeout(() => { handleSearch(); }, 400); 
         });
         
         function clearSearch(render = true) {
@@ -400,7 +413,6 @@
             document.getElementById('searchResultsHeader').classList.add('hidden');
             if(render) renderCurrentFolder();
         }
-
     </script>
 </body>
 </html>
