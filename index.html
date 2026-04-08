@@ -331,9 +331,13 @@
                         currentNode.children[folderName] = { name: folderName, type: "folder", pathArr: [...currentPathBuild], children: {} };
                     } 
                     // תיקון השגיאה: אם היא הוגדרה קודם בטעות כקובץ, נשדרג אותה לתיקייה כדי שלא תקרוס
-                    else if (!currentNode.children[folderName].children) {
-                        currentNode.children[folderName].children = {};
-                        currentNode.children[folderName].type = "folder";
+                    else {
+                        if (!currentNode.children[folderName].children) {
+                            currentNode.children[folderName].children = {};
+                            currentNode.children[folderName].type = "folder";
+                        }
+                        // הוספת הנתיב המלא! כדי שלחיצה על תת התיקייה הזו לא תחזיר לראשי
+                        currentNode.children[folderName].pathArr = [...currentPathBuild];
                     }
                     
                     currentNode = currentNode.children[folderName];
