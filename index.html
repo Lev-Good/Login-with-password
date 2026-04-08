@@ -108,7 +108,7 @@
                 <div class="flex items-center gap-3 text-center md:text-right">
                     <span class="text-4xl">🍿</span>
                     <div>
-                        <h1 class="text-2xl md:text-3xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-purple-400 via-pink-500 to-red-500">מאגר 0רטים ומשחקים</h1>
+                        <h1 class="text-2xl md:text-3xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-purple-400 via-pink-500 to-red-500">מאגר ה0רטים והמשחקים</h1>
                         <p class="text-xs text-purple-200 tracking-wider">מתעדכן אוטומטית • חינם לחלוטין</p>
                     </div>
                 </div>
@@ -151,8 +151,9 @@
         // 1. הגדרת סיסמה (החלף למה שבא לך)
         const SITE_PASSWORD = "458967"; 
         
-        // 2. שים כאן את הקישור ל-CSV של גוגל שיטס המעודכן!!!
-        const EXPLORER_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSgUqLHEGqyAlO0fcbSFuuXnWn5F-3WoUBkV31yFqWlH6iWXAd_rbUY0fq3-PbMoUcxidwjtM19-1AB/pub?gid=1418058253&single=true&output=csv';
+        // 2. חיבור לקובץ ה-JSON שמיוצר על ידי הסקריפט ונשמר בגיטהאב
+        // חשוב: משתמשים ב-raw.githubusercontent.com כדי למשוך את הקובץ ישירות
+        const DATA_JSON_URL = 'https://raw.githubusercontent.com/mytovmail/Login-with-password/main/data.json';
         // ==========================================
 
         let fileSystem = { name: "ראשי", type: "folder", children: {} };
@@ -189,36 +190,43 @@
                 </div>`).join('');
         }
 
-        // משיכת נתונים מ-CSV (מעודכן ל-5 עמודות בלבד)
+        // משיכת נתונים מקובץ ה-JSON
         async function fetchExplorerData() {
             showSkeletons();
-            if(EXPLORER_CSV_URL.includes('שים_כאן')) {
-                document.getElementById('explorerGrid').innerHTML = '<div class="col-span-full text-center text-red-400 py-10">נא להגדיר קישור ל-CSV בקוד!</div>';
-                return;
-            }
             try {
-                const response = await fetch(EXPLORER_CSV_URL);
-                const data = await response.text();
+                // אנו מוסיפים timestamp לכתובת כדי לעקוף את המטמון (Cache) של גיטהאב 
+                // ולוודא שתמיד נקבל את הקובץ המעודכן ביותר
+                const response = await fetch(DATA_JSON_URL + '?t=' + new Date().getTime());
+                
+                if (!response.ok) {
+                    throw new Error('הקובץ עדיין לא נוצר בגיטהאב או שיש שגיאה בקישור.');
+                }
+                
+                const data = await response.json();
                 buildFileSystem(data);
-            } catch (error) { console.error("שגיאה:", error); }
+            } catch (error) { 
+                console.error("שגיאה:", error); 
+                document.getElementById('explorerGrid').innerHTML = `
+                    <div class="col-span-full text-center py-10">
+                        <p class="text-red-400 text-xl font-bold mb-2">שגיאה בטעינת הנתונים</p>
+                        <p class="text-gray-300">וודא שהרצת את הסקריפט בגוגל שיטס ושהוא יצר את הקובץ data.json בגיטהאב.</p>
+                    </div>`;
+            }
         }
 
-        function buildFileSystem(csvText) {
-            const lines = csvText.split('\n');
+        // בניית מבנה התיקיות מתוך ה-JSON
+        function buildFileSystem(jsonData) {
             fileSystem.children = {}; 
             allSearchableItems = [];
             
-            for (let i = 1; i < lines.length; i++) {
-                if (!lines[i] || !lines[i].trim()) continue;
-                const row = lines[i].split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
+            jsonData.forEach(item => {
+                const pathStr = item["נתיב_תיקיה"] || "";
+                const fileName = item["שם_קובץ"] || "";
+                const type = item["סוג"] || "";
+                const link = item["קישור"] || "";
+                const creationDate = item["תאריך_יצירה"] || "";
                 
-                const pathStr = row[0] ? row[0].replace(/"/g, '').trim() : '';
-                const fileName = row[1] ? row[1].replace(/"/g, '').trim() : '';
-                const type = row[2] ? row[2].replace(/"/g, '').trim() : '';
-                const link = row[3] ? row[3].replace(/"/g, '').trim() : '';
-                const creationDate = row[4] ? row[4].replace(/"/g, '').trim() : '';
-                
-                if(!pathStr || !fileName) continue;
+                if(!pathStr || !fileName) return; // ממשיך לאיבר הבא במקרה של שורה ריקה
 
                 const fileObj = { name: fileName, type: type, link: link, path: pathStr, date: creationDate };
                 
@@ -237,9 +245,9 @@
                     currentNode = currentNode.children[folderName];
                 }
                 currentNode.children[fileName] = fileObj;
-            }
+            });
             
-// איסוף והכנת "אינדקס" חיפוש מראש לביצועים מהירים
+            // איסוף והכנת "אינדקס" חיפוש מראש לביצועים מהירים
             function collectAllItems(node, collection) {
                 for (const key in node.children) {
                     const child = node.children[key];
@@ -335,6 +343,7 @@
         }
 
         function handleSearch() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
             const breadcrumbs = document.getElementById('breadcrumbsContainer');
             const searchHeader = document.getElementById('searchResultsHeader');
 
@@ -384,6 +393,7 @@
                 handleSearch();
             }, 400); 
         });
+        
         function clearSearch(render = true) {
             document.getElementById('searchInput').value = "";
             document.getElementById('breadcrumbsContainer').parentElement.classList.remove('hidden');
@@ -391,7 +401,6 @@
             if(render) renderCurrentFolder();
         }
 
-        document.getElementById('searchInput').addEventListener('input', handleSearch);
     </script>
 </body>
 </html>
