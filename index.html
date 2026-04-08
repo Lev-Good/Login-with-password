@@ -302,17 +302,21 @@
             allSearchableItems = [];
             
             jsonData.forEach(item => {
-                const pathStr = item["נתיב_תיקיה"] || "";
-                const fileName = item["שם_קובץ"] || "";
+                let pathStr = item["נתיב_תיקיה"] || "";
+                let fileName = item["שם_קובץ"] || "";
                 const type = item["סוג"] || "";
                 const link = item["קישור"] || "";
                 const creationDate = item["תאריך_יצירה"] || "";
                 
                 if(!pathStr || !fileName) return;
 
+                // ניקוי לוכסנים מיותרים בסוף נתיב (למשל אם כתבו "ראשי/" במקום "ראשי")
+                if (pathStr.endsWith('/')) pathStr = pathStr.slice(0, -1);
+
                 const fileObj = { name: fileName, type: type, link: link, path: pathStr, date: creationDate };
                 
-                const folders = pathStr.split('/');
+                // פיצול הנתיב והתעלמות מרווחים ריקים
+                const folders = pathStr.split('/').filter(f => f.trim() !== "");
                 let currentNode = fileSystem;
                 let currentPathBuild = [];
                 let startIndex = folders[0] === "ראשי" ? 1 : 0;
@@ -321,11 +325,25 @@
                 for (let j = startIndex; j < folders.length; j++) {
                     let folderName = folders[j];
                     currentPathBuild.push(folderName);
+                    
+                    // אם התיקייה לא קיימת בכלל, ניצור אותה
                     if (!currentNode.children[folderName]) {
                         currentNode.children[folderName] = { name: folderName, type: "folder", pathArr: [...currentPathBuild], children: {} };
+                    } 
+                    // תיקון השגיאה: אם היא הוגדרה קודם בטעות כקובץ, נשדרג אותה לתיקייה כדי שלא תקרוס
+                    else if (!currentNode.children[folderName].children) {
+                        currentNode.children[folderName].children = {};
+                        currentNode.children[folderName].type = "folder";
                     }
+                    
                     currentNode = currentNode.children[folderName];
                 }
+                
+                // מניעת דריסה: אם כבר קיימת תיקייה באותו שם של הקובץ שאנחנו מנסים ליצור, נשמור את התוכן שלה
+                if (currentNode.children[fileName] && currentNode.children[fileName].children) {
+                    fileObj.children = currentNode.children[fileName].children;
+                }
+                
                 currentNode.children[fileName] = fileObj;
             });
             
