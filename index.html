@@ -86,6 +86,53 @@
             transform: scale(1.1) translateY(-5px);
         }
 
+        /* כפתור מועדפים על הקלף */
+        .favorite-btn {
+            position: absolute;
+            top: 0.75rem;
+            left: 0.75rem;
+            z-index: 10;
+            padding: 0.5rem;
+            border-radius: 9999px;
+            background-color: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.2s ease;
+            opacity: 0;
+        }
+        
+        .tile-card:hover .favorite-btn, .favorite-btn.is-active {
+            opacity: 1;
+        }
+
+        .favorite-btn:hover {
+            background-color: rgba(0, 0, 0, 0.6);
+            transform: scale(1.1);
+        }
+
+        .favorite-btn.is-active i {
+            fill: #ec4899;
+            color: #ec4899;
+        }
+
+        /* אנימציות לחיצה על כפתור מועדפים */
+        @keyframes heartPop {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.35); box-shadow: 0 0 15px rgba(236, 72, 153, 0.6); }
+            100% { transform: scale(1); }
+        }
+        .animate-heart-pop {
+            animation: heartPop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        @keyframes heartRemove {
+            0% { transform: scale(1); }
+            50% { transform: scale(0.8); }
+            100% { transform: scale(1); }
+        }
+        .animate-heart-remove {
+            animation: heartRemove 0.3s ease-out;
+        }
+
         /* סקרולר מותאם ואלגנטי */
         ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-track { background: transparent; }
@@ -174,14 +221,18 @@
                     </div>
                     <div>
                         <h1 class="text-xl md:text-2xl font-bold tracking-tight text-white">מאגר ה0רטים והמשחקים</h1>
-                        <div class="flex flex-wrap gap-3 items-center justify-center md:justify-start mt-1.5">
-                            <span class="text-xs text-zinc-400 flex items-center gap-1">
+                        <div class="flex flex-wrap gap-2 items-center justify-center md:justify-start mt-1.5">
+                            <span class="text-xs text-zinc-400 flex items-center gap-1 hidden sm:flex ml-2">
                                 <i data-lucide="check-circle-2" class="w-3 h-3 text-emerald-400"></i>
-                                מתעדכן אוטומטית • חינם לחלוטין
+                                חינם לחלוטין
                             </span>
-                            <button onclick="showNewFiles()" class="text-xs bg-purple-500/10 hover:bg-purple-500/20 border border-purple-500/30 px-3 py-1 rounded-full transition text-purple-300 font-medium flex items-center gap-1.5">
+                            <button onclick="showNewFiles()" class="text-xs bg-purple-500/10 hover:bg-purple-500/20 border border-purple-500/30 px-3 py-1.5 rounded-full transition text-purple-300 font-medium flex items-center gap-1.5">
                                 <i data-lucide="sparkles" class="w-3.5 h-3.5"></i>
                                 קבצים חדשים
+                            </button>
+                            <button onclick="showFavorites()" class="text-xs bg-pink-500/10 hover:bg-pink-500/20 border border-pink-500/30 px-3 py-1.5 rounded-full transition text-pink-300 font-medium flex items-center gap-1.5">
+                                <i data-lucide="heart" class="w-3.5 h-3.5"></i>
+                                מועדפים
                             </button>
                         </div>
                     </div>
@@ -211,11 +262,19 @@
                 </div>
             </div>
 
-            <!-- כותרת תוצאות חיפוש -->
+            <!-- כותרת תוצאות חיפוש / מועדפים -->
             <div id="searchResultsHeader" class="hidden mb-8 text-center bg-purple-500/5 border border-purple-500/10 rounded-2xl p-6">
-                <div class="flex items-center justify-center gap-2 mb-3 text-purple-300">
-                    <i data-lucide="file-search" class="w-6 h-6"></i>
-                    <h3 class="text-xl font-medium">תוצאות חיפוש: <span id="searchCount" class="font-bold text-white ml-1"></span></h3>
+                <div class="flex flex-col items-center justify-center gap-2 mb-4 text-purple-300">
+                    <div class="flex items-center gap-2">
+                        <i id="searchHeaderIcon" data-lucide="file-search" class="w-6 h-6"></i>
+                        <h3 class="text-xl font-medium"><span id="searchHeaderTitle">תוצאות חיפוש</span>: <span id="searchCount" class="font-bold text-white ml-1"></span></h3>
+                    </div>
+                    
+                    <!-- הודעת אזהרה למועדפים -->
+                    <div id="favoritesWarning" class="hidden mt-2 text-sm text-pink-300/80 bg-pink-500/10 px-4 py-2 rounded-lg border border-pink-500/20 flex items-center gap-2">
+                        <i data-lucide="info" class="w-4 h-4"></i>
+                        הנתונים נשמרים בדפדפן הנוכחי בלבד, ויימחקו במידה ותנקה היסטוריה או עוגיות (Cookies).
+                    </div>
                 </div>
                 <button onclick="clearSearch()" class="inline-flex items-center gap-2 px-5 py-2 bg-zinc-800 hover:bg-zinc-700 rounded-full text-sm transition text-zinc-300">
                     <i data-lucide="x" class="w-4 h-4"></i> חזור לתיקיות
@@ -251,8 +310,8 @@
         // 1. אתחול אייקונים התחלתי
         lucide.createIcons();
 
-        // 2. הגדרת סיסמה
-        const SITE_PASSWORD = "458967"; 
+        // 2. כתובת ה-API לאימות סיסמה (הדבק כאן את ה-URL שקיבלת מגוגל)
+        const AUTH_API_URL = "https://script.google.com/macros/s/AKfycbyqpXEUuiPXyeorCUpzTUb7zi8phFfc938CAG4-OiSgeFCjRGklXG16cbwVVEz0dA-JYQ/exec"; 
         
         // 3. חיבור לקובץ ה-JSON שמיוצר על ידי הסקריפט ונשמר בגיטהאב
         const DATA_JSON_URL = 'https://raw.githubusercontent.com/lev-good/Login-with-password/main/data.json';
@@ -265,38 +324,156 @@
         let currentPathArr = []; 
         let allSearchableItems = []; 
         let isSearchMode = false;
-        let allSystemMessages = []; // משתנה לשמירת כל ההודעות
+        let isFavoritesMode = false;
+        let allSystemMessages = []; 
+        
+        // ניהול מועדפים
+        let favorites = JSON.parse(localStorage.getItem('my_favorites')) || [];
         
         const BATCH_SIZE = 50; 
         let currentDisplayItems = []; 
         let currentlyDisplayedCount = 0;
         let intersectionObserver = null;
 
-        // מערכת התחברות
-        function checkPassword() {
+        // מערכת התחברות מאובטחת דרך שרת חיצוני
+        async function checkPassword() {
             const input = document.getElementById('passInput').value;
-            if (input === SITE_PASSWORD) {
-                const loginScreen = document.getElementById('loginScreen');
-                loginScreen.classList.add('opacity-0');
-                loginScreen.classList.add('scale-105');
-                
-                setTimeout(() => {
-                    loginScreen.classList.add('hidden');
-                    const mainContent = document.getElementById('mainContent');
-                    mainContent.classList.remove('hidden');
-                    mainContent.classList.add('flex');
-                    mainContent.classList.add('animate-fade-up');
+            const btn = document.querySelector('button[onclick="checkPassword()"]');
+            const err = document.getElementById('errorMsg');
+            
+            if (!input) return;
+
+            // שינוי תצוגת הכפתור למצב טעינה
+            const originalBtnContent = btn.innerHTML;
+            btn.innerHTML = `<i data-lucide="loader-circle" class="w-5 h-5 animate-spin"></i><span>מאמת נתונים...</span>`;
+            btn.disabled = true;
+            err.classList.add('hidden');
+            lucide.createIcons({ root: btn });
+
+            try {
+                // שליחת הבקשה ל-API של גוגל שיצרנו
+                const response = await fetch(`${AUTH_API_URL}?password=${encodeURIComponent(input)}`);
+                const result = await response.json();
+
+                if (result.success) {
+                    // התחברות הצליחה
+                    const loginScreen = document.getElementById('loginScreen');
+                    loginScreen.classList.add('opacity-0');
+                    loginScreen.classList.add('scale-105');
                     
-                    fetchAnnouncements();
-                    fetchExplorerData();
-                }, 600);
-            } else {
-                const err = document.getElementById('errorMsg');
+                    setTimeout(() => {
+                        loginScreen.classList.add('hidden');
+                        const mainContent = document.getElementById('mainContent');
+                        mainContent.classList.remove('hidden');
+                        mainContent.classList.add('flex');
+                        mainContent.classList.add('animate-fade-up');
+                        
+                        fetchAnnouncements();
+                        fetchExplorerData();
+                    }, 600);
+                } else {
+                    // סיסמה שגויה
+                    btn.innerHTML = originalBtnContent;
+                    btn.disabled = false;
+                    lucide.createIcons({ root: btn });
+                    
+                    err.classList.remove('hidden');
+                    err.classList.add('animate-pulse');
+                    setTimeout(() => err.classList.remove('animate-pulse'), 1000);
+                }
+            } catch (error) {
+                // שגיאת תקשורת
+                console.error("שגיאה באימות:", error);
+                btn.innerHTML = originalBtnContent;
+                btn.disabled = false;
+                lucide.createIcons({ root: btn });
+                
+                err.innerHTML = `<i data-lucide="triangle-alert" class="w-4 h-4"></i> שגיאת תקשורת, נסה שוב.`;
                 err.classList.remove('hidden');
-                err.classList.add('animate-pulse');
-                setTimeout(() => err.classList.remove('animate-pulse'), 1000);
+                lucide.createIcons({ root: err });
             }
         }
+
+        // ==========================================
+        // מערכת מועדפים (LocalStorage)
+        // ==========================================
+        
+        function toggleFavorite(event, searchIndex, element) {
+            event.preventDefault(); // מניעת פתיחת הקישור/התיקייה בלחיצה על הכפתור
+            event.stopPropagation();
+            
+            const btn = element.closest('.favorite-btn');
+            const isFav = favorites.includes(searchIndex);
+            
+            // איפוס אנימציות קודמות כדי שאפשר יהיה להפעיל אותן מחדש בכל לחיצה
+            btn.classList.remove('animate-heart-pop', 'animate-heart-remove');
+            void btn.offsetWidth; // מאלץ את הדפדפן לרענן את האלמנט (Reflow)
+            
+            if (isFav) {
+                favorites = favorites.filter(id => id !== searchIndex);
+                btn.classList.remove('is-active');
+                btn.classList.add('animate-heart-remove'); // הוספת אנימציית הסרה
+                
+                // אם אנחנו במסך מועדפים וביטלנו מועדף, נסיר אותו מהתצוגה מיד עם אנימציה
+                if(isFavoritesMode) {
+                    const card = element.closest('.tile-card');
+                    card.style.transition = 'all 0.3s ease';
+                    card.style.opacity = '0';
+                    card.style.transform = 'scale(0.9)'; // כיווץ קל ביציאה
+                    setTimeout(() => {
+                        card.style.display = 'none';
+                        updateFavoritesCount();
+                    }, 300);
+                }
+            } else {
+                favorites.push(searchIndex);
+                btn.classList.add('is-active');
+                btn.classList.add('animate-heart-pop'); // הוספת אנימציית בחירה קופצת
+            }
+            
+            localStorage.setItem('my_favorites', JSON.stringify(favorites));
+        }
+
+        function updateFavoritesCount() {
+            if(isFavoritesMode) {
+                const visibleCards = document.querySelectorAll('.tile-card[style!="display: none;"]');
+                document.getElementById('searchCount').innerText = `${favorites.length} פריטים`;
+                
+                if(favorites.length === 0) {
+                    document.getElementById('explorerGrid').innerHTML = `
+                        <div class="col-span-full py-20 flex flex-col items-center justify-center text-zinc-500">
+                            <i data-lucide="heart-crack" class="w-16 h-16 mb-4 opacity-50 stroke-[1]"></i>
+                            <p class="text-lg">עדיין לא סימנת אף פריט כמועדף</p>
+                        </div>`;
+                    lucide.createIcons();
+                }
+            }
+        }
+
+        function showFavorites() {
+            clearSearch(false);
+            document.getElementById('breadcrumbsContainer').parentElement.classList.add('hidden');
+            const searchHeader = document.getElementById('searchResultsHeader');
+            searchHeader.classList.remove('hidden');
+            
+            isSearchMode = true;
+            isFavoritesMode = true;
+            
+            // עדכון כותרות ואייקונים
+            document.getElementById('searchHeaderTitle').innerText = "המועדפים שלי";
+            document.getElementById('searchHeaderIcon').setAttribute('data-lucide', 'heart');
+            document.getElementById('searchHeaderIcon').classList.replace('text-purple-300', 'text-pink-400');
+            document.getElementById('favoritesWarning').classList.remove('hidden');
+            
+            document.getElementById('searchCount').innerText = `${favorites.length} פריטים`;
+            
+            // סינון רק של הפריטים שקיימים במערך המועדפים (לפי ה-searchIndex הייחודי שיצרנו)
+            let favItems = allSearchableItems.filter(item => favorites.includes(item.searchIndex));
+            
+            lucide.createIcons(); // רענון האייקון בכותרת
+            drawGrid(favItems, false);
+        }
+
 
         // ==========================================
         // מערכת הודעות (גוגל שיטס)
@@ -352,7 +529,6 @@
                     </div>
                 `;
 
-                // אם יש יותר מהודעה אחת בשיטס, נציג את כפתור היסטוריית ההודעות
                 if (validRows.length > 1) {
                     messagesHTML += `
                         <div class="mt-3 flex justify-end animate-fade-up" style="animation-delay: 0.1s">
@@ -368,12 +544,11 @@
                     const container = document.getElementById('announcements-container');
                     container.innerHTML = messagesHTML;
                     container.classList.remove('hidden');
-                    lucide.createIcons({ root: container }); // רענון אייקונים בתוך ההודעות
+                    lucide.createIcons({ root: container });
                 }
             } catch (error) { console.error('שגיאה בטעינת הודעות:', error); }
         }
 
-        // פונקציות לפתיחה וסגירה של חלון ההודעות הישנות
         function openMessagesModal() {
             const modalList = document.getElementById('modalMessagesList');
             modalList.innerHTML = allSystemMessages.map((row, index) => {
@@ -490,6 +665,7 @@
             function collectAllItems(node, collection) {
                 for (const key in node.children) {
                     const child = node.children[key];
+                    // יצירת מזהה ייחודי לחיפוש ולמועדפים
                     child.searchIndex = (child.name + " " + (child.path || "")).toLowerCase();
                     collection.push(child);
                     if (child.type === "folder") collectAllItems(child, collection);
@@ -535,7 +711,7 @@
             });
             
             breadcrumbsDiv.innerHTML = breadcrumbsHTML;
-            lucide.createIcons({ root: breadcrumbsDiv }); // רענון אייקונים
+            lucide.createIcons({ root: breadcrumbsDiv }); 
             
             drawGrid(Object.values(currentNode.children));
         }
@@ -586,18 +762,34 @@
                 const item = currentDisplayItems[i];
                 const delay = (i - currentlyDisplayedCount) * 0.03; 
                 
+                // בדיקה אם הפריט במועדפים
+                const safeSearchIndex = item.searchIndex.replace(/'/g, "\\'").replace(/"/g, "&quot;");
+                const isFav = favorites.includes(item.searchIndex);
+                const favClass = isFav ? 'is-active' : '';
+                
+                // כפתור מועדפים שיוזרק לכל קלף
+                const favButtonHTML = `
+                    <button onclick="toggleFavorite(event, '${safeSearchIndex}', this)" class="favorite-btn ${favClass}" title="הוסף למועדפים">
+                        <i data-lucide="heart" class="w-4 h-4 text-zinc-300"></i>
+                    </button>
+                `;
+
                 if (item.type === "folder") {
                     const pathStr = item.pathArr ? item.pathArr.join('||') : item.name;
                     const safePathStr = pathStr.replace(/'/g, "\\'").replace(/"/g, "&quot;");
                     const itemCount = Object.keys(item.children || {}).length;
                     
                     batchHTML += `
-                        <div onclick="jumpToFolderFromSearch('${safePathStr}')" class="tile-card rounded-3xl p-5 cursor-pointer flex flex-col items-center justify-center text-center aspect-square md:aspect-[4/5] animate-fade-up" style="animation-delay: ${delay}s">
+                        <div onclick="jumpToFolderFromSearch('${safePathStr}')" class="relative tile-card cursor-pointer rounded-3xl p-5 flex flex-col items-center justify-center text-center aspect-square md:aspect-[4/5] animate-fade-up" style="animation-delay: ${delay}s">
+                            ${favButtonHTML}
                             <div class="tile-icon-wrapper w-16 h-16 md:w-20 md:h-20 mb-4 rounded-2xl bg-zinc-800 border border-zinc-700 flex items-center justify-center text-purple-400">
                                 <i data-lucide="folder" class="w-8 h-8 md:w-10 md:h-10 fill-purple-900/20 stroke-[1.5]"></i>
                             </div>
                             <span class="font-semibold text-zinc-100 line-clamp-2 text-sm md:text-base leading-snug">${item.name}</span>
                             <span class="text-[10px] md:text-xs text-zinc-500 mt-2 font-mono">${itemCount} פריטים</span>
+                            ${(isSearchMode || isFavoritesMode) && item.path ? `
+                                <div class="mt-2 text-[10px] text-zinc-500 w-full truncate border-t border-white/5 pt-1">📁 ${item.path}</div>
+                            ` : ''}
                         </div>`;
                 } else {
                     let iconName = "file-text"; 
@@ -621,16 +813,17 @@
                     }
                     
                     batchHTML += `
-                        <a href="${item.link}" target="_blank" class="tile-card rounded-3xl p-5 cursor-pointer flex flex-col items-center text-center h-full aspect-square md:aspect-[4/5] animate-fade-up group" style="animation-delay: ${delay}s">
+                        <a href="${item.link}" target="_blank" class="relative tile-card cursor-pointer rounded-3xl p-5 flex flex-col items-center text-center h-full aspect-square md:aspect-[4/5] animate-fade-up group" style="animation-delay: ${delay}s">
+                            ${favButtonHTML}
                             <div class="tile-icon-wrapper w-14 h-14 md:w-16 md:h-16 rounded-2xl border flex flex-shrink-0 items-center justify-center mb-4 ${themeClass} transition-colors">
                                 <i data-lucide="${iconName}" class="w-7 h-7 md:w-8 md:h-8 stroke-[1.5] ${highlight} transition-colors"></i>
                             </div>
                             <h3 class="font-medium text-zinc-200 text-xs md:text-sm mb-2 line-clamp-3 leading-snug group-hover:text-white transition-colors">${item.name}</h3>
-                            ${isSearchMode && item.path ? `
+                            ${(isSearchMode || isFavoritesMode) && item.path ? `
                                 <div class="mt-auto w-full pt-3 border-t border-white/5">
-                                    <div class="text-[10px] text-zinc-500 flex items-center justify-center gap-1 w-full truncate" title="${item.path}">
-                                        <i data-lucide="folder" class="w-3 h-3 flex-shrink-0"></i>
-                                        <span class="truncate">${item.path}</span>
+                                    <div class="text-[10px] text-zinc-500 flex items-start justify-center gap-1 w-full text-center" title="${item.path}">
+                                        <i data-lucide="folder" class="w-3 h-3 flex-shrink-0 mt-0.5"></i>
+                                        <span class="break-words leading-tight">${item.path}</span>
                                     </div>
                                 </div>
                             ` : ''}
@@ -639,7 +832,7 @@
             }
 
             gridDiv.insertAdjacentHTML('beforeend', batchHTML);
-            lucide.createIcons({ root: gridDiv }); // חשוב - לרנדר אייקונים עבור האלמנטים החדשים
+            lucide.createIcons({ root: gridDiv }); 
             
             currentlyDisplayedCount = endIndex;
 
@@ -673,9 +866,18 @@
             searchHeader.classList.remove('hidden');
             
             isSearchMode = true;
+            isFavoritesMode = false;
+            
+            document.getElementById('searchHeaderTitle').innerText = "קבצים חדשים";
+            document.getElementById('searchHeaderIcon').setAttribute('data-lucide', 'sparkles');
+            document.getElementById('searchHeaderIcon').classList.replace('text-pink-400', 'text-purple-300');
+            document.getElementById('favoritesWarning').classList.add('hidden');
+            
             document.getElementById('searchCount').innerText = "הקבצים החדשים ביותר שעלו למערכת";
             
             let filesOnly = allSearchableItems.filter(item => item.type !== 'folder');
+            
+            lucide.createIcons();
             drawGrid(filesOnly, true);
         }
 
@@ -686,6 +888,7 @@
 
             if (searchTerm === "") {
                 isSearchMode = false;
+                isFavoritesMode = false;
                 breadcrumbs.parentElement.classList.remove('hidden'); 
                 searchHeader.classList.add('hidden');
                 renderCurrentFolder(); 
@@ -693,8 +896,14 @@
             }
             
             isSearchMode = true;
+            isFavoritesMode = false;
             breadcrumbs.parentElement.classList.add('hidden'); 
             searchHeader.classList.remove('hidden');
+            
+            document.getElementById('searchHeaderTitle').innerText = "תוצאות חיפוש";
+            document.getElementById('searchHeaderIcon').setAttribute('data-lucide', 'file-search');
+            document.getElementById('searchHeaderIcon').classList.replace('text-pink-400', 'text-purple-300');
+            document.getElementById('favoritesWarning').classList.add('hidden');
             document.getElementById('searchCount').innerText = "מחפש...";
 
             let results = [];
@@ -705,6 +914,7 @@
             }
 
             document.getElementById('searchCount').innerText = `${results.length} תוצאות`;
+            lucide.createIcons();
             drawGrid(results, false);
         }
 
@@ -721,6 +931,7 @@
             document.getElementById('breadcrumbsContainer').parentElement.classList.remove('hidden');
             document.getElementById('searchResultsHeader').classList.add('hidden');
             isSearchMode = false;
+            isFavoritesMode = false;
             if(render) renderCurrentFolder();
         }
 
