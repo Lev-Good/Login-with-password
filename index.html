@@ -4,130 +4,195 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>מאגר ה0רטים והמשחקים הכשרים</title>
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Google Fonts -->
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Rubik:wght@400;600;800&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Rubik:wght@300;400;500;600;700;800&display=swap');
         
         :root { 
-            --primary: #8b5cf6; 
-            --secondary: #ec4899;
-            --bg-color: #0f172a;
+            --bg-base: #09090b;
+            --bg-surface: #18181b;
+            --primary: #8b5cf6;
+            --primary-glow: rgba(139, 92, 246, 0.5);
+            --secondary: #3b82f6;
+            --accent: #ec4899;
         }
         
         body { 
             font-family: 'Rubik', sans-serif; 
-            background-color: var(--bg-color); 
-            color: white;
+            background-color: var(--bg-base); 
+            color: #f4f4f5;
             min-height: 100vh;
             overflow-x: hidden;
+            background-image: 
+                radial-gradient(at 0% 0%, hsla(253,16%,7%,1) 0, transparent 50%), 
+                radial-gradient(at 50% 0%, hsla(225,39%,30%,0.1) 0, transparent 50%), 
+                radial-gradient(at 100% 0%, hsla(339,49%,30%,0.1) 0, transparent 50%);
+            background-attachment: fixed;
         }
         
-        /* רקע אנימטיבי מטורף */
-        .animated-bg {
-            position: fixed;
-            top: 0; left: 0; width: 100vw; height: 100vh;
-            background: linear-gradient(45deg, #0f172a, #1e1b4b, #312e81, #1e1b4b);
-            background-size: 400% 400%;
-            animation: gradientBG 15s ease infinite;
-            z-index: -2;
-        }
-        @keyframes gradientBG {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
+        /* עיצוב זכוכית מעודן (Premium Glassmorphism) */
+        .glass-panel {
+            background: rgba(24, 24, 27, 0.6);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
         }
 
-        /* עיצוב זכוכית (Glassmorphism) */
-        .glass {
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
+        .glass-input {
+            background: rgba(0, 0, 0, 0.3);
             border: 1px solid rgba(255, 255, 255, 0.1);
-            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+            transition: all 0.3s ease;
+        }
+        .glass-input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 15px var(--primary-glow);
+            background: rgba(0, 0, 0, 0.5);
         }
 
-        /* כרטיסיות (Tiles) */
+        /* כרטיסיות (Tiles) בעיצוב נקי */
         .tile-card { 
-            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             position: relative;
             overflow: hidden;
+            background: linear-gradient(145deg, rgba(39,39,42,0.6) 0%, rgba(24,24,27,0.8) 100%);
+            border: 1px solid rgba(255,255,255,0.05);
         }
-        .tile-card::before {
-            content: ''; position: absolute; top: 0; left: -100%; width: 50%; height: 100%;
-            background: linear-gradient(to right, transparent, rgba(255,255,255,0.1), transparent);
-            transform: skewX(-25deg); transition: all 0.5s;
+        
+        .tile-card::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(circle at 50% 0%, rgba(255,255,255,0.1) 0%, transparent 70%);
+            opacity: 0;
+            transition: opacity 0.4s ease;
         }
-        .tile-card:hover { 
-            transform: translateY(-8px) scale(1.02); 
-            box-shadow: 0 15px 30px rgba(139, 92, 246, 0.3); 
-            border-color: var(--secondary);
-        }
-        .tile-card:hover::before { left: 125%; }
 
-        /* סקרולר מותאם */
-        ::-webkit-scrollbar { width: 8px; height: 8px; }
-        ::-webkit-scrollbar-track { background: rgba(0,0,0,0.2); }
-        ::-webkit-scrollbar-thumb { background: var(--primary); border-radius: 10px; }
-        ::-webkit-scrollbar-thumb:hover { background: var(--secondary); }
+        .tile-card:hover { 
+            transform: translateY(-6px); 
+            border-color: rgba(255,255,255,0.15);
+            box-shadow: 0 15px 35px -5px rgba(0,0,0,0.5), 0 0 20px rgba(139, 92, 246, 0.2);
+        }
+        .tile-card:hover::after { opacity: 1; }
+
+        .tile-icon-wrapper {
+            transition: transform 0.4s ease;
+        }
+        .tile-card:hover .tile-icon-wrapper {
+            transform: scale(1.1) translateY(-5px);
+        }
+
+        /* סקרולר מותאם ואלגנטי */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #3f3f46; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--primary); }
 
         /* אנימציות כניסה */
-        @keyframes popIn {
-            0% { opacity: 0; transform: scale(0.9) translateY(20px); }
-            100% { opacity: 1; transform: scale(1) translateY(0); }
+        @keyframes fadeUp {
+            0% { opacity: 0; transform: translateY(15px); }
+            100% { opacity: 1; transform: translateY(0); }
         }
-        .animate-pop { animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
+        .animate-fade-up { animation: fadeUp 0.6s ease-out forwards; }
         
-        /* עיצוב להודעות מערכת כך שישמרו על ירידות שורה */
+        /* עיצוב להודעות מערכת */
         .message-content {
             white-space: pre-wrap;
             word-wrap: break-word;
         }
+        
+        /* אפקטים נוספים */
+        .gradient-text {
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-image: linear-gradient(to right, #a855f7, #ec4899);
+        }
     </style>
 </head>
-<body>
-
-    <div class="animated-bg"></div>
+<body class="antialiased selection:bg-purple-500/30">
 
     <!-- מסך התחברות (סיסמה) -->
-    <div id="loginScreen" class="fixed inset-0 z-50 flex items-center justify-center glass backdrop-blur-xl transition-opacity duration-500">
-        <div class="glass p-8 md:p-12 rounded-3xl text-center max-w-md w-full mx-4 border-t border-l border-white/20 shadow-2xl animate-pop">
-            <div class="text-6xl mb-6 animate-bounce">🎬🎮</div>
-            <h2 class="text-3xl font-bold mb-2 bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-pink-500">ברוכים הבאים</h2>
-            <p class="text-gray-300 mb-8">הזן את סיסמת הגישה למאגר</p>
+    <div id="loginScreen" class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md transition-all duration-700">
+        <div class="glass-panel p-10 md:p-14 rounded-[2rem] text-center max-w-md w-full mx-4 animate-fade-up">
+            <div class="flex justify-center mb-6 text-purple-400">
+                <i data-lucide="shield-check" class="w-16 h-16 stroke-[1.5]"></i>
+            </div>
+            <h2 class="text-3xl md:text-4xl font-extrabold mb-3 gradient-text tracking-tight">ברוכים הבאים</h2>
+            <p class="text-zinc-400 mb-10 text-sm md:text-base">הזן את סיסמת הגישה למאגר</p>
             
-            <input type="password" id="passInput" placeholder="סיסמה..." 
-                   class="w-full px-5 py-4 rounded-xl bg-black/30 border border-white/10 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-pink-500 mb-6 text-center text-xl"
-                   onkeypress="if(event.key === 'Enter') checkPassword()">
+            <div class="relative mb-8">
+                <div class="absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none text-zinc-500">
+                    <i data-lucide="lock" class="w-5 h-5"></i>
+                </div>
+                <input type="password" id="passInput" placeholder="סיסמה..." 
+                       class="w-full pl-5 pr-12 py-4 rounded-xl glass-input text-white placeholder-zinc-500 focus:outline-none text-center text-lg tracking-widest"
+                       onkeypress="if(event.key === 'Enter') checkPassword()">
+            </div>
             
-            <button onclick="checkPassword()" class="w-full bg-gradient-to-r from-purple-600 to-pink-500 hover:from-purple-500 hover:to-pink-400 text-white font-bold py-4 rounded-xl shadow-lg transform transition hover:scale-105 active:scale-95">
-                כניסה למאגר
+            <button onclick="checkPassword()" class="w-full bg-white text-black hover:bg-zinc-200 font-bold py-4 rounded-xl shadow-[0_0_20px_rgba(255,255,255,0.1)] transform transition hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-2">
+                <span>כניסה למאגר</span>
+                <i data-lucide="arrow-left" class="w-5 h-5"></i>
             </button>
-            <p id="errorMsg" class="text-red-400 mt-4 text-sm hidden font-bold">סיסמה שגויה, נסה שוב!</p>
+            <div id="errorMsg" class="text-red-400 mt-5 text-sm hidden font-medium flex items-center justify-center gap-1 bg-red-500/10 py-2 rounded-lg border border-red-500/20">
+                <i data-lucide="triangle-alert" class="w-4 h-4"></i>
+                סיסמה שגויה, נסה שוב!
+            </div>
+        </div>
+    </div>
+
+    <!-- מודל הודעות קודמות -->
+    <div id="messagesModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/80 backdrop-blur-md transition-all duration-300">
+        <div class="glass-panel w-full max-w-2xl mx-4 max-h-[85vh] flex flex-col rounded-[2rem] border-white/10 shadow-2xl animate-fade-up">
+            <div class="flex items-center justify-between p-6 border-b border-white/5">
+                <div class="flex items-center gap-3 text-purple-400">
+                    <i data-lucide="history" class="w-6 h-6"></i>
+                    <h3 class="text-xl font-bold text-white">היסטוריית הודעות מערכת</h3>
+                </div>
+                <button onclick="closeMessagesModal()" class="text-zinc-400 hover:text-white bg-white/5 hover:bg-white/10 p-2 rounded-full transition-colors">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+            <div id="modalMessagesList" class="p-6 overflow-y-auto flex-grow">
+                <!-- הודעות יוזרקו לכאן -->
+            </div>
         </div>
     </div>
 
     <!-- תוכן האתר (מוסתר בהתחלה) -->
     <div id="mainContent" class="hidden flex-col min-h-screen">
         
-        <header class="glass sticky top-0 z-40 border-b border-white/10">
-            <div class="container mx-auto px-4 py-4 flex flex-col md:flex-row justify-between items-center gap-4">
-                <div class="flex items-center gap-3 text-center md:text-right">
-                    <span class="text-4xl">🍿</span>
+        <header class="glass-panel sticky top-0 z-40 border-b border-white/5">
+            <div class="container mx-auto px-4 py-4 md:py-5 flex flex-col md:flex-row justify-between items-center gap-5">
+                <div class="flex items-center gap-4 text-center md:text-right">
+                    <div class="bg-gradient-to-br from-purple-500/20 to-pink-500/20 p-3 rounded-2xl border border-purple-500/20 text-purple-400 shadow-lg">
+                        <i data-lucide="library-big" class="w-8 h-8 md:w-10 md:h-10"></i>
+                    </div>
                     <div>
-                        <h1 class="text-2xl md:text-3xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-purple-400 via-pink-500 to-red-500">מאגר ה0רטים והמשחקים</h1>
-                        <div class="flex flex-wrap gap-2 items-center justify-center md:justify-start mt-1">
-                            <p class="text-xs text-purple-200 tracking-wider">מתעדכן אוטומטית • חינם לחלוטין</p>
-                            <button onclick="showNewFiles()" class="text-xs bg-white/10 hover:bg-white/20 border border-white/20 px-3 py-1 rounded-full transition shadow-lg text-pink-300 font-bold flex items-center gap-1">
-                                <span>✨</span> קבצים חדשים
+                        <h1 class="text-xl md:text-2xl font-bold tracking-tight text-white">מאגר ה0רטים והמשחקים</h1>
+                        <div class="flex flex-wrap gap-3 items-center justify-center md:justify-start mt-1.5">
+                            <span class="text-xs text-zinc-400 flex items-center gap-1">
+                                <i data-lucide="check-circle-2" class="w-3 h-3 text-emerald-400"></i>
+                                מתעדכן אוטומטית • חינם לחלוטין
+                            </span>
+                            <button onclick="showNewFiles()" class="text-xs bg-purple-500/10 hover:bg-purple-500/20 border border-purple-500/30 px-3 py-1 rounded-full transition text-purple-300 font-medium flex items-center gap-1.5">
+                                <i data-lucide="sparkles" class="w-3.5 h-3.5"></i>
+                                קבצים חדשים
                             </button>
                         </div>
                     </div>
                 </div>
                 
-                <div class="relative w-full md:w-1/3">
-                    <span class="absolute inset-y-0 right-0 flex items-center pr-4 text-gray-400">🔍</span>
+                <div class="relative w-full md:w-[28rem]">
+                    <div class="absolute inset-y-0 right-0 flex items-center pr-4 text-zinc-400 pointer-events-none">
+                        <i data-lucide="search" class="w-5 h-5"></i>
+                    </div>
                     <input type="text" id="searchInput" placeholder="חיפוש 0רט או משחק..." 
-                           class="w-full pl-4 pr-12 py-3 rounded-full glass focus:bg-white/10 border border-white/20 outline-none transition text-white placeholder-gray-300 shadow-inner">
+                           class="w-full pl-4 pr-12 py-3.5 rounded-2xl glass-input text-white placeholder-zinc-500 shadow-inner">
                 </div>
             </div>
         </header>
@@ -140,77 +205,96 @@
             </div>
 
             <!-- אזור ניווט / פירורי לחם -->
-            <div class="glass rounded-2xl p-4 mb-8 flex items-center gap-2 overflow-x-auto whitespace-nowrap scroll-smooth">
-                <div id="breadcrumbsContainer" class="flex items-center gap-2 text-sm md:text-base font-medium">
+            <div class="glass-panel rounded-2xl p-2.5 mb-8 flex items-center overflow-x-auto whitespace-nowrap scroll-smooth">
+                <div id="breadcrumbsContainer" class="flex items-center text-sm md:text-base font-medium px-2">
                     טוען נתונים...
                 </div>
             </div>
 
             <!-- כותרת תוצאות חיפוש -->
-            <div id="searchResultsHeader" class="hidden mb-6 text-center">
-                <h3 class="text-2xl font-bold">תוצאות חיפוש: <span id="searchCount" class="text-pink-400"></span></h3>
-                <button onclick="clearSearch()" class="mt-2 px-6 py-2 glass rounded-full hover:bg-white/10 text-sm transition text-pink-300">חזור לתיקיות ✕</button>
+            <div id="searchResultsHeader" class="hidden mb-8 text-center bg-purple-500/5 border border-purple-500/10 rounded-2xl p-6">
+                <div class="flex items-center justify-center gap-2 mb-3 text-purple-300">
+                    <i data-lucide="file-search" class="w-6 h-6"></i>
+                    <h3 class="text-xl font-medium">תוצאות חיפוש: <span id="searchCount" class="font-bold text-white ml-1"></span></h3>
+                </div>
+                <button onclick="clearSearch()" class="inline-flex items-center gap-2 px-5 py-2 bg-zinc-800 hover:bg-zinc-700 rounded-full text-sm transition text-zinc-300">
+                    <i data-lucide="x" class="w-4 h-4"></i> חזור לתיקיות
+                </button>
             </div>
 
             <!-- הגריד של הקבצים -->
-            <div id="explorerGrid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6">
+            <div id="explorerGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 md:gap-5">
                 <!-- נתונים יוזרקו לכאן -->
             </div>
 
             <!-- סמן גלילה למטה לטעינה עצלה (Infinite Scroll) -->
-            <div id="loading-sentinel" class="col-span-full py-8 mt-4 text-center hidden">
-                <div class="inline-flex items-center gap-2 px-6 py-3 glass rounded-full text-pink-300 animate-pulse">
-                    <span class="text-xl">⏳</span> טוען קבצים נוספים...
+            <div id="loading-sentinel" class="col-span-full py-12 text-center hidden">
+                <div class="inline-flex items-center gap-3 px-6 py-3 glass-panel rounded-full text-zinc-400">
+                    <i data-lucide="loader-circle" class="w-5 h-5 animate-spin text-purple-400"></i>
+                    <span class="text-sm font-medium">טוען קבצים נוספים...</span>
                 </div>
             </div>
 
         </main>
 
-        <footer class="mt-auto glass border-t border-white/10 text-center py-6 text-sm text-gray-400">
-            <p>נבנה באהבה ❤️ | על ידי myylbwt@gmail.com</p>
+        <footer class="mt-auto border-t border-white/5 bg-black/40 text-center py-6 text-sm text-zinc-500 flex flex-col items-center justify-center gap-2">
+            <div class="flex items-center gap-1.5">
+                <span>נבנה באהבה</span>
+                <i data-lucide="heart" class="w-4 h-4 text-red-500 fill-red-500"></i>
+                <span>| על ידי <a href="https://lev-good.github.io/Good-heart/" target="_blank" class="hover:text-white transition-colors underline decoration-zinc-700 underline-offset-4">לב טוב</a></span>
+            </div>
         </footer>
     </div>
 
     <script>
         // ==========================================
-        // 1. הגדרת סיסמה (החלף למה שבא לך)
+        // 1. אתחול אייקונים התחלתי
+        lucide.createIcons();
+
+        // 2. הגדרת סיסמה
         const SITE_PASSWORD = "458967"; 
         
-        // 2. חיבור לקובץ ה-JSON שמיוצר על ידי הסקריפט ונשמר בגיטהאב
-        const DATA_JSON_URL = 'https://raw.githubusercontent.com/mytovmail/Login-with-password/main/data.json';
+        // 3. חיבור לקובץ ה-JSON שמיוצר על ידי הסקריפט ונשמר בגיטהאב
+        const DATA_JSON_URL = 'https://raw.githubusercontent.com/lev-good/Login-with-password/main/data.json';
         
-        // 3. חיבור להודעות גוגל שיטס (הומר ל-CSV)
+        // 4. חיבור להודעות גוגל שיטס (הומר ל-CSV)
         const MESSAGES_SHEET_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSgUqLHEGqyAlO0fcbSFuuXnWn5F-3WoUBkV31yFqWlH6iWXAd_rbUY0fq3-PbMoUcxidwjtM19-1AB/pub?gid=321355246&single=true&output=csv';
         // ==========================================
 
         let fileSystem = { name: "ראשי", type: "folder", children: {} };
         let currentPathArr = []; 
         let allSearchableItems = []; 
-        let isSearchMode = false; // נוסף משתנה שבודק אם אנחנו במצב חיפוש/חדשים
+        let isSearchMode = false;
+        let allSystemMessages = []; // משתנה לשמירת כל ההודעות
         
-        // משתנים למנגנון הטעינה העצלה (Lazy Loading)
         const BATCH_SIZE = 50; 
         let currentDisplayItems = []; 
         let currentlyDisplayedCount = 0;
         let intersectionObserver = null;
 
-        // מערכת התחברות בסיסית
+        // מערכת התחברות
         function checkPassword() {
             const input = document.getElementById('passInput').value;
             if (input === SITE_PASSWORD) {
-                document.getElementById('loginScreen').style.opacity = '0';
+                const loginScreen = document.getElementById('loginScreen');
+                loginScreen.classList.add('opacity-0');
+                loginScreen.classList.add('scale-105');
+                
                 setTimeout(() => {
-                    document.getElementById('loginScreen').classList.add('hidden');
-                    document.getElementById('mainContent').classList.remove('hidden');
-                    document.getElementById('mainContent').classList.add('flex');
-                    fetchAnnouncements(); // טוען הודעות רק אחרי התחברות
+                    loginScreen.classList.add('hidden');
+                    const mainContent = document.getElementById('mainContent');
+                    mainContent.classList.remove('hidden');
+                    mainContent.classList.add('flex');
+                    mainContent.classList.add('animate-fade-up');
+                    
+                    fetchAnnouncements();
                     fetchExplorerData();
-                }, 500);
+                }, 600);
             } else {
                 const err = document.getElementById('errorMsg');
                 err.classList.remove('hidden');
-                err.classList.add('animate-bounce');
-                setTimeout(() => err.classList.remove('animate-bounce'), 1000);
+                err.classList.add('animate-pulse');
+                setTimeout(() => err.classList.remove('animate-pulse'), 1000);
             }
         }
 
@@ -251,26 +335,75 @@
                 const validRows = rows.filter(row => row.join('').trim().length > 0);
                 if (validRows.length === 0) return;
                 
-                const messagesHTML = validRows.map((row, index) => {
-                    const messageText = row[0] || '';
-                    if (!messageText.trim() && index === 0) return '';
-                    const safeHtml = escapeHTML(messageText);
-                    return `
-                        <div class="glass border-r-4 border-pink-500 py-3 px-4 rounded-xl shadow-lg flex items-start animate-pop h-auto">
-                            <div class="flex-shrink-0 text-xl ml-3 mt-0.5 drop-shadow-md">📢</div>
-                            <div class="w-full flex-1 min-w-0">
-                                <div class="text-sm text-gray-100 message-content leading-relaxed">${safeHtml}</div>
-                            </div>
+                allSystemMessages = validRows; // שמירת כל ההודעות עבור המודל
+
+                // משיכת ההודעה הראשונה (החדשה ביותר) לעמוד הראשי
+                const latestMessageText = validRows[0][0] || '';
+                const safeHtml = escapeHTML(latestMessageText);
+                
+                let messagesHTML = `
+                    <div class="glass-panel border-r-4 border-purple-500 p-4 md:p-5 rounded-2xl flex items-start gap-4 animate-fade-up">
+                        <div class="flex-shrink-0 text-purple-400 bg-purple-500/10 p-2.5 rounded-xl">
+                            <i data-lucide="megaphone" class="w-6 h-6"></i>
+                        </div>
+                        <div class="w-full flex-1 min-w-0 pt-0.5">
+                            <div class="text-sm md:text-base text-zinc-200 message-content leading-relaxed">${safeHtml}</div>
+                        </div>
+                    </div>
+                `;
+
+                // אם יש יותר מהודעה אחת בשיטס, נציג את כפתור היסטוריית ההודעות
+                if (validRows.length > 1) {
+                    messagesHTML += `
+                        <div class="mt-3 flex justify-end animate-fade-up" style="animation-delay: 0.1s">
+                            <button onclick="openMessagesModal()" class="text-sm flex items-center gap-2 text-zinc-400 hover:text-purple-400 transition-colors bg-white/5 hover:bg-white/10 px-4 py-2 rounded-xl border border-white/5 shadow-sm">
+                                <i data-lucide="history" class="w-4 h-4"></i>
+                                הודעות קודמות
+                            </button>
                         </div>
                     `;
-                }).join('');
+                }
 
                 if (messagesHTML.trim() !== '') {
                     const container = document.getElementById('announcements-container');
                     container.innerHTML = messagesHTML;
                     container.classList.remove('hidden');
+                    lucide.createIcons({ root: container }); // רענון אייקונים בתוך ההודעות
                 }
-            } catch (error) { console.error('שגיאה בטעינת הודעות המערכת:', error); }
+            } catch (error) { console.error('שגיאה בטעינת הודעות:', error); }
+        }
+
+        // פונקציות לפתיחה וסגירה של חלון ההודעות הישנות
+        function openMessagesModal() {
+            const modalList = document.getElementById('modalMessagesList');
+            modalList.innerHTML = allSystemMessages.map((row, index) => {
+                const messageText = row[0] || '';
+                if (!messageText.trim()) return '';
+                const safeHtml = escapeHTML(messageText);
+                
+                return `
+                    <div class="glass-panel border-r-4 ${index === 0 ? 'border-purple-500' : 'border-zinc-600'} p-4 md:p-5 rounded-2xl flex items-start gap-4 mb-4">
+                        <div class="flex-shrink-0 ${index === 0 ? 'text-purple-400 bg-purple-500/10' : 'text-zinc-400 bg-zinc-800'} p-2.5 rounded-xl">
+                            <i data-lucide="${index === 0 ? 'megaphone' : 'message-square'}" class="w-6 h-6"></i>
+                        </div>
+                        <div class="w-full flex-1 min-w-0 pt-0.5">
+                            <div class="text-sm md:text-base ${index === 0 ? 'text-zinc-200' : 'text-zinc-400'} message-content leading-relaxed">${safeHtml}</div>
+                            ${index === 0 ? '<span class="inline-block mt-2 text-xs font-medium bg-purple-500/20 text-purple-300 px-2 py-0.5 rounded">הודעה אחרונה</span>' : ''}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            const modal = document.getElementById('messagesModal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            lucide.createIcons({ root: modalList });
+        }
+
+        function closeMessagesModal() {
+            const modal = document.getElementById('messagesModal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
         }
 
         // ==========================================
@@ -278,28 +411,34 @@
         // ==========================================
         function showSkeletons() {
             const grid = document.getElementById('explorerGrid');
-            grid.innerHTML = Array(15).fill().map((_, i) => `
-                <div class="glass rounded-2xl p-5 aspect-[4/5] flex flex-col items-center justify-center animate-pulse" style="animation-delay: ${i*0.1}s">
-                    <div class="w-20 h-20 bg-white/10 rounded-full mb-4"></div>
-                    <div class="h-4 bg-white/10 rounded w-3/4 mb-2"></div>
-                    <div class="h-3 bg-white/10 rounded w-1/2"></div>
-                </div>`).join('');
+            let skeletonHTML = '';
+            for(let i=0; i<15; i++) {
+                skeletonHTML += `
+                <div class="tile-card rounded-3xl p-5 aspect-square md:aspect-[4/5] flex flex-col items-center justify-center animate-pulse">
+                    <div class="w-16 h-16 bg-white/5 rounded-2xl mb-4"></div>
+                    <div class="h-3 bg-white/5 rounded w-3/4 mb-3"></div>
+                    <div class="h-2 bg-white/5 rounded w-1/2"></div>
+                </div>`;
+            }
+            grid.innerHTML = skeletonHTML;
         }
 
         async function fetchExplorerData() {
             showSkeletons();
             try {
                 const response = await fetch(DATA_JSON_URL + '?t=' + new Date().getTime());
-                if (!response.ok) throw new Error('הקובץ עדיין לא נוצר בגיטהאב או שיש שגיאה בקישור.');
+                if (!response.ok) throw new Error('Data file not found');
                 const data = await response.json();
                 buildFileSystem(data);
             } catch (error) { 
                 console.error("שגיאה:", error); 
                 document.getElementById('explorerGrid').innerHTML = `
-                    <div class="col-span-full text-center py-10">
-                        <p class="text-red-400 text-xl font-bold mb-2">שגיאה בטעינת הנתונים</p>
-                        <p class="text-gray-300">וודא שהרצת את הסקריפט בגוגל שיטס ושהוא יצר את הקובץ data.json בגיטהאב.</p>
+                    <div class="col-span-full flex flex-col items-center justify-center py-16 text-center">
+                        <i data-lucide="server-crash" class="w-16 h-16 text-red-500/50 mb-4"></i>
+                        <p class="text-red-400 text-lg font-medium mb-1">שגיאה בטעינת הנתונים</p>
+                        <p class="text-zinc-500 text-sm">הקובץ לא נמצא במאגר. אנא ודא שהסקריפט רץ בהצלחה.</p>
                     </div>`;
+                lucide.createIcons({ root: document.getElementById('explorerGrid') });
             }
         }
 
@@ -315,14 +454,10 @@
                 const creationDate = item["תאריך_יצירה"] || "";
                 
                 if(!pathStr || !fileName) return;
-
-                // ניקוי לוכסנים מיותרים בסוף נתיב (למשל אם כתבו "ראשי/" במקום "ראשי")
                 if (pathStr.endsWith('/')) pathStr = pathStr.slice(0, -1);
 
-                // שמירת המיקום המקורי (index) כגיבוי למקרה שהתאריך חסר
                 const fileObj = { name: fileName, type: type, link: link, path: pathStr, date: creationDate, originalIndex: index };
                 
-                // פיצול הנתיב והתעלמות מרווחים ריקים
                 const folders = pathStr.split('/').filter(f => f.trim() !== "");
                 let currentNode = fileSystem;
                 let currentPathBuild = [];
@@ -333,28 +468,22 @@
                     let folderName = folders[j];
                     currentPathBuild.push(folderName);
                     
-                    // אם התיקייה לא קיימת בכלל, ניצור אותה
                     if (!currentNode.children[folderName]) {
                         currentNode.children[folderName] = { name: folderName, type: "folder", pathArr: [...currentPathBuild], children: {} };
                     } 
-                    // תיקון השגיאה: אם היא הוגדרה קודם בטעות כקובץ, נשדרג אותה לתיקייה כדי שלא תקרוס
                     else {
                         if (!currentNode.children[folderName].children) {
                             currentNode.children[folderName].children = {};
                             currentNode.children[folderName].type = "folder";
                         }
-                        // הוספת הנתיב המלא! כדי שלחיצה על תת התיקייה הזו לא תחזיר לראשי
                         currentNode.children[folderName].pathArr = [...currentPathBuild];
                     }
-                    
                     currentNode = currentNode.children[folderName];
                 }
                 
-                // מניעת דריסה: אם כבר קיימת תיקייה באותו שם של הקובץ שאנחנו מנסים ליצור, נשמור את התוכן שלה
                 if (currentNode.children[fileName] && currentNode.children[fileName].children) {
                     fileObj.children = currentNode.children[fileName].children;
                 }
-                
                 currentNode.children[fileName] = fileObj;
             });
             
@@ -390,18 +519,29 @@
             for (let folder of currentPathArr) { if(currentNode.children[folder]) currentNode = currentNode.children[folder]; }
             
             const breadcrumbsDiv = document.getElementById('breadcrumbsContainer');
-            let breadcrumbsHTML = `<button onclick="navigateTo(-1)" class="hover:bg-white/20 bg-white/10 px-4 py-2 rounded-xl flex items-center gap-2 transition duration-300 shadow-lg border border-white/5"><span class="text-xl">🏠</span> ראשי</button>`;
+            
+            let breadcrumbsHTML = `
+                <button onclick="navigateTo(-1)" class="flex items-center gap-2 hover:bg-white/10 px-4 py-2 rounded-xl transition duration-300 text-zinc-300 hover:text-white">
+                    <i data-lucide="home" class="w-4 h-4"></i>
+                    <span>ראשי</span>
+                </button>`;
             
             currentPathArr.forEach((folder, index) => {
-                breadcrumbsHTML += `<span class="text-pink-500 font-bold mx-1">❯</span><button onclick="navigateTo(${index})" class="hover:bg-white/20 bg-transparent px-3 py-2 rounded-xl transition duration-300 border border-transparent hover:border-white/10">${folder}</button>`;
+                breadcrumbsHTML += `
+                    <i data-lucide="chevron-left" class="w-4 h-4 text-zinc-600 mx-1 flex-shrink-0"></i>
+                    <button onclick="navigateTo(${index})" class="hover:bg-white/10 px-3 py-2 rounded-xl transition duration-300 text-zinc-300 hover:text-white truncate max-w-[120px] md:max-w-[200px]">
+                        ${folder}
+                    </button>`;
             });
+            
             breadcrumbsDiv.innerHTML = breadcrumbsHTML;
+            lucide.createIcons({ root: breadcrumbsDiv }); // רענון אייקונים
             
             drawGrid(Object.values(currentNode.children));
         }
 
         // ==========================================
-        // מנגנון הטעינה העצלה (Lazy Loading) המשודרג
+        // מנגנון הטעינה העצלה (Lazy Loading)
         // ==========================================
         function drawGrid(items, sortByDate = false) {
             const gridDiv = document.getElementById('explorerGrid');
@@ -409,18 +549,22 @@
             currentlyDisplayedCount = 0;
             
             if (items.length === 0) { 
-                gridDiv.innerHTML = '<div class="col-span-full py-20 text-center text-gray-400 text-2xl animate-pulse">אין פה כלום... 🏜️</div>'; 
+                gridDiv.innerHTML = `
+                    <div class="col-span-full py-20 flex flex-col items-center justify-center text-zinc-500">
+                        <i data-lucide="folder-open" class="w-16 h-16 mb-4 opacity-50 stroke-[1]"></i>
+                        <p class="text-lg">אין פה כלום...</p>
+                    </div>`; 
+                lucide.createIcons({ root: gridDiv });
                 document.getElementById('loading-sentinel').classList.add('hidden');
                 return; 
             }
             
-            // מיון הרשימה המלאה פעם אחת מראש
             currentDisplayItems = items.sort((a, b) => {
                 if (sortByDate) {
                     let dateA = new Date(a.date).getTime() || 0;
                     let dateB = new Date(b.date).getTime() || 0;
-                    if (dateA !== dateB) return dateB - dateA; // החדשים ביותר קודם
-                    return (b.originalIndex || 0) - (a.originalIndex || 0); // גיבוי: השורות התחתונות בשיטס קודם
+                    if (dateA !== dateB) return dateB - dateA;
+                    return (b.originalIndex || 0) - (a.originalIndex || 0);
                 }
 
                 if (a.type === "folder" && b.type !== "folder") return -1;
@@ -428,8 +572,8 @@
                 return a.name.localeCompare(b.name);
             });
 
-            renderNextBatch(); // טעינת המנה הראשונה
-            setupIntersectionObserver(); // הפעלת המעקב לגלילה
+            renderNextBatch();
+            setupIntersectionObserver();
         }
 
         function renderNextBatch() {
@@ -440,8 +584,7 @@
 
             for (let i = currentlyDisplayedCount; i < endIndex; i++) {
                 const item = currentDisplayItems[i];
-                // איפוס זמן ההשהיה כדי שהאנימציה תעבוד על כל מנה שנטענת בנפרד
-                const delay = (i - currentlyDisplayedCount) * 0.05; 
+                const delay = (i - currentlyDisplayedCount) * 0.03; 
                 
                 if (item.type === "folder") {
                     const pathStr = item.pathArr ? item.pathArr.join('||') : item.name;
@@ -449,38 +592,57 @@
                     const itemCount = Object.keys(item.children || {}).length;
                     
                     batchHTML += `
-                        <div onclick="jumpToFolderFromSearch('${safePathStr}')" class="tile-card glass rounded-3xl p-6 cursor-pointer flex flex-col items-center justify-center text-center aspect-square border border-white/10 group animate-pop" style="animation-delay: ${delay}s">
-                            <div class="w-20 h-20 mb-4 rounded-2xl bg-gradient-to-br from-purple-500/20 to-pink-500/20 flex items-center justify-center group-hover:scale-110 transition duration-300">
-                                <span class="text-5xl drop-shadow-lg">📁</span>
+                        <div onclick="jumpToFolderFromSearch('${safePathStr}')" class="tile-card rounded-3xl p-5 cursor-pointer flex flex-col items-center justify-center text-center aspect-square md:aspect-[4/5] animate-fade-up" style="animation-delay: ${delay}s">
+                            <div class="tile-icon-wrapper w-16 h-16 md:w-20 md:h-20 mb-4 rounded-2xl bg-zinc-800 border border-zinc-700 flex items-center justify-center text-purple-400">
+                                <i data-lucide="folder" class="w-8 h-8 md:w-10 md:h-10 fill-purple-900/20 stroke-[1.5]"></i>
                             </div>
-                            <span class="font-extrabold text-white line-clamp-2 text-lg drop-shadow-md">${item.name}</span>
-                            <span class="text-xs text-purple-300 mt-2 bg-purple-900/50 px-3 py-1 rounded-full">${itemCount} פריטים</span>
+                            <span class="font-semibold text-zinc-100 line-clamp-2 text-sm md:text-base leading-snug">${item.name}</span>
+                            <span class="text-[10px] md:text-xs text-zinc-500 mt-2 font-mono">${itemCount} פריטים</span>
                         </div>`;
                 } else {
-                    let icon = "📄"; let colorClass = "from-gray-500 to-gray-700";
-                    if(item.type === "וידאו") { icon = "🎬"; colorClass = "from-blue-500 to-indigo-600"; }
-                    if(item.type === "משחק/תוכנה") { icon = "🎮"; colorClass = "from-green-400 to-emerald-600"; }
-                    if(item.type === "שמע") { icon = "🎧"; colorClass = "from-yellow-400 to-orange-500"; }
+                    let iconName = "file-text"; 
+                    let themeClass = "text-zinc-400 bg-zinc-800 border-zinc-700";
+                    let highlight = "group-hover:text-zinc-200";
+
+                    if(item.type === "וידאו") { 
+                        iconName = "clapperboard"; 
+                        themeClass = "text-blue-400 bg-blue-500/10 border-blue-500/20"; 
+                        highlight = "group-hover:text-blue-300";
+                    }
+                    if(item.type === "משחק/תוכנה") { 
+                        iconName = "gamepad-2"; 
+                        themeClass = "text-emerald-400 bg-emerald-500/10 border-emerald-500/20"; 
+                        highlight = "group-hover:text-emerald-300";
+                    }
+                    if(item.type === "שמע") { 
+                        iconName = "headphones"; 
+                        themeClass = "text-amber-400 bg-amber-500/10 border-amber-500/20"; 
+                        highlight = "group-hover:text-amber-300";
+                    }
                     
                     batchHTML += `
-                        <a href="${item.link}" target="_blank" class="tile-card glass rounded-3xl border border-white/10 cursor-pointer flex flex-col relative h-full aspect-[4/5] animate-pop group" style="animation-delay: ${delay}s">
-                            <div class="h-2 w-full bg-gradient-to-r ${colorClass} rounded-t-3xl opacity-80 group-hover:opacity-100 transition"></div>
-                            <div class="p-6 flex flex-col items-center flex-grow justify-center text-center">
-                                <div class="w-20 h-20 rounded-2xl bg-gradient-to-br ${colorClass} flex items-center justify-center mb-5 shadow-lg group-hover:rotate-12 transition duration-300">
-                                    <span class="text-4xl filter drop-shadow-md">${icon}</span>
-                                </div>
-                                <h3 class="font-bold text-white text-md mb-2 line-clamp-3 leading-snug drop-shadow-md">${item.name}</h3>
-                                ${isSearchMode && item.path ? `<div class="text-[11px] text-gray-300 bg-white/5 px-2 py-1 rounded-lg mt-auto w-full line-clamp-2 break-words leading-tight border border-white/5" title="${item.path}">📁 ${item.path}</div>` : ''}
+                        <a href="${item.link}" target="_blank" class="tile-card rounded-3xl p-5 cursor-pointer flex flex-col items-center text-center h-full aspect-square md:aspect-[4/5] animate-fade-up group" style="animation-delay: ${delay}s">
+                            <div class="tile-icon-wrapper w-14 h-14 md:w-16 md:h-16 rounded-2xl border flex flex-shrink-0 items-center justify-center mb-4 ${themeClass} transition-colors">
+                                <i data-lucide="${iconName}" class="w-7 h-7 md:w-8 md:h-8 stroke-[1.5] ${highlight} transition-colors"></i>
                             </div>
+                            <h3 class="font-medium text-zinc-200 text-xs md:text-sm mb-2 line-clamp-3 leading-snug group-hover:text-white transition-colors">${item.name}</h3>
+                            ${isSearchMode && item.path ? `
+                                <div class="mt-auto w-full pt-3 border-t border-white/5">
+                                    <div class="text-[10px] text-zinc-500 flex items-center justify-center gap-1 w-full truncate" title="${item.path}">
+                                        <i data-lucide="folder" class="w-3 h-3 flex-shrink-0"></i>
+                                        <span class="truncate">${item.path}</span>
+                                    </div>
+                                </div>
+                            ` : ''}
                         </a>`;
                 }
             }
 
-            // הזרקת המנה כולה בבת אחת למען ביצועים מקסימליים
             gridDiv.insertAdjacentHTML('beforeend', batchHTML);
+            lucide.createIcons({ root: gridDiv }); // חשוב - לרנדר אייקונים עבור האלמנטים החדשים
+            
             currentlyDisplayedCount = endIndex;
 
-            // עדכון מצב סמן הגלילה
             const sentinel = document.getElementById('loading-sentinel');
             if (currentlyDisplayedCount >= currentDisplayItems.length) {
                 sentinel.classList.add('hidden');
@@ -498,7 +660,7 @@
                     renderNextBatch();
                 }
             }, {
-                rootMargin: '250px' // מתחיל לטעון קצת לפני שמגיעים למטה
+                rootMargin: '300px'
             });
             
             intersectionObserver.observe(sentinel);
@@ -513,7 +675,6 @@
             isSearchMode = true;
             document.getElementById('searchCount').innerText = "הקבצים החדשים ביותר שעלו למערכת";
             
-            // סינון רק של קבצים (ללא תיקיות)
             let filesOnly = allSearchableItems.filter(item => item.type !== 'folder');
             drawGrid(filesOnly, true);
         }
@@ -543,7 +704,6 @@
                 }
             }
 
-            // עדכון כותרת (כעת הגלילה החכמה מטפלת בעומס, אז אפשר להציג את כל התוצאות ללא הגבלה!)
             document.getElementById('searchCount').innerText = `${results.length} תוצאות`;
             drawGrid(results, false);
         }
@@ -553,7 +713,7 @@
             clearTimeout(searchTimeout);
             searchTimeout = setTimeout(() => {
                 handleSearch();
-            }, 400); 
+            }, 300); 
         });
         
         function clearSearch(render = true) {
